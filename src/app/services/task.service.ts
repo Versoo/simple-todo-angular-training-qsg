@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {TasksListModel} from '../models/tasks-list.model';
-import {Observable, of} from 'rxjs';
+import {BehaviorSubject, Observable, of} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {catchError, map, tap} from 'rxjs/operators';
 import {TaskType} from '../models/task-type.enum';
@@ -12,13 +12,13 @@ import {TaskModel} from '../models/task.model';
 export class TaskService {
 
     private url = 'http://localhost:3001/tasks';
-    private tasksList: TasksListModel[] = [];
+    private tasksList = new BehaviorSubject<TasksListModel[]>([]);
 
     constructor(private httpClient: HttpClient) {
     }
 
     public get tasks(): Observable<TasksListModel[]> {
-        return of(this.tasksList);
+        return this.tasksList;
     }
 
     public getData() {
@@ -43,9 +43,8 @@ export class TaskService {
                     )
                 ]),
             )
-            .subscribe((data) => {
-                this.tasksList.length = 0;
-                this.tasksList.push(...data);
+            .subscribe((data: TasksListModel[]) => {
+                this.tasksList.next(data);
             });
     }
 
